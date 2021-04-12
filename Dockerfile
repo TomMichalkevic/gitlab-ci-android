@@ -8,23 +8,39 @@ ENV ANDROID_HOME "${ANDROID_SDK_ROOT}"
 ENV PATH "$PATH:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools"
 ENV DEBIAN_FRONTEND noninteractive
 ENV FLUTTER_CHANNEL=stable
-ENV FLUTTER_VERSION=2.4-${FLUTTER_CHANNEL}
+ENV FLUTTER_VERSION=2.0.4-${FLUTTER_CHANNEL}
 
 RUN apt-get -qq update \
     && apt-get install -qqy --no-install-recommends \
+    sudo \
+    ruby-full \
+    ruby-dev \
+    gcc \
+    libffi-dev \
+    make \
+    build-essential \
+    xz-utils \
     bzip2 \
     curl \
     git-core \
     html2text \
     openjdk-11-jdk \
     libc6-i386 \
+    libpcre3 \
+    libpcre3-dev \
     lib32stdc++6 \
     lib32gcc1 \
     lib32ncurses6 \
     lib32z1 \
     unzip \
     locales \
+    wget \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# RUN useradd -m docker && echo "docker:docker" | chpasswd && adduser docker sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+CMD /bin/bash
+RUN gem install bundler
+RUN gem install fastlane
 RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
@@ -46,9 +62,7 @@ RUN mkdir -p /root/.android \
     && touch /root/.android/repositories.cfg \
     && sdkmanager --update
 
-RUN wget --quiet --output-document=flutter.tar.xz https://storage.googleapis.com/flutter_infra/releases/${FLUTTER_CHANNEL}/linux/flutter_linux_v${FLUTTER_VERSION}.tar.xz \
-    && tar xf flutter.tar.xz -C /opt \
-    && rm flutter.tar.xz
+RUN wget --quiet --output-document=flutter.tar.xz https://storage.googleapis.com/flutter_infra/releases/${FLUTTER_CHANNEL}/linux/flutter_linux_${FLUTTER_VERSION}.tar.xz && tar xf flutter.tar.xz -C /opt/ && rm flutter.tar.xz
 ENV PATH=$PATH:/opt/flutter/bin
 
 ADD packages.txt /sdk
